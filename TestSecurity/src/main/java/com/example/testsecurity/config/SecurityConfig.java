@@ -39,6 +39,14 @@ public class SecurityConfig {
         http
                 .csrf((auth) -> auth.disable());
 
+        http
+                .sessionManagement((auth) -> auth
+                        .maximumSessions(1) // 하나의 아이디에서 최대 중복 로그인 가능 개수.
+                        .maxSessionsPreventsLogin(true)); // 다중 로그인 개수 초과하였을 경우 판단.
+
+        http
+                .sessionManagement((auth) -> auth
+                        .sessionFixation().changeSessionId());
 
         return http.build();
     }
