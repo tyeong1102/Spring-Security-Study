@@ -3,9 +3,14 @@ package com.example.testsecurity.config;
 import lombok.Builder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -30,24 +35,41 @@ public class SecurityConfig {
                     .anyRequest().authenticated() // 로그인된 사용자만 접근할 수 있도록
                 );
 
+//        http
+//                .formLogin((auth) -> auth.loginPage("/login")
+//                        .loginProcessingUrl("/loginProc")
+//                        .permitAll()
+//                );
+//
+//        http
+//                .sessionManagement((auth) -> auth
+//                        .maximumSessions(1) // 하나의 아이디에서 최대 중복 로그인 가능 개수.
+//                        .maxSessionsPreventsLogin(true)); // 다중 로그인 개수 초과하였을 경우 판단.
+//
+//        http
+//                .sessionManagement((auth) -> auth
+//                        .sessionFixation().changeSessionId());
         http
-                .formLogin((auth) -> auth.loginPage("/login")
-                        .loginProcessingUrl("/loginProc")
-                        .permitAll()
-                );
-
-        http
-                .csrf((auth) -> auth.disable());
-
-        http
-                .sessionManagement((auth) -> auth
-                        .maximumSessions(1) // 하나의 아이디에서 최대 중복 로그인 가능 개수.
-                        .maxSessionsPreventsLogin(true)); // 다중 로그인 개수 초과하였을 경우 판단.
-
-        http
-                .sessionManagement((auth) -> auth
-                        .sessionFixation().changeSessionId());
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+
+        UserDetails user1 = User.builder()
+                .username("user1")
+                .password(bCryptPasswordEncoder().encode("1234"))
+                .roles("ADMIN")
+                .build();
+
+        UserDetails user2 = User.builder()
+                .username("user2")
+                .password(bCryptPasswordEncoder().encode("1234"))
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(user1, user2);
     }
 }
